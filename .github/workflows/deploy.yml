@@ -43,17 +43,14 @@ jobs:
           cp .env.example .env
           php artisan key:generate --ansi
 
-      - name: Generate wayfinder routes
-        run: php artisan wayfinder:generate
-
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Run CI checks
-        run: composer ci:check
-
       - name: Build assets
         run: npm run build
+
+      - name: Run CI checks
+        run: composer ci:check
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
