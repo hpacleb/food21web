@@ -1,5 +1,6 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { Clock, Facebook, Mail, MapPin, MessageCircle } from 'lucide-react';
+import Seo from '@/components/seo';
 import { order } from '@/routes';
 
 export default function Contact() {
@@ -11,12 +12,7 @@ export default function Contact() {
 
     return (
         <>
-            <Head title="Contact us">
-                <meta
-                    name="description"
-                    content={`Contact ${site.name}. ${site.tagline}`}
-                />
-            </Head>
+            <Seo />
 
             <section className="border-b border-[#F0DCC2] bg-white/70">
                 <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">

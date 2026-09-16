@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { Camera, ChevronRight } from 'lucide-react';
+import Seo from '@/components/seo';
 import { contact } from '@/routes';
 import type { GalleryImage } from '@/types';
 
@@ -9,7 +10,6 @@ type Props = {
 };
 
 export default function Gallery({ gallery }: Props) {
-    const { site } = usePage().props;
     const [filter, setFilter] = useState<string>('All');
 
     const tags = ['All', ...new Set(gallery.map((image) => image.tag))];
@@ -20,12 +20,7 @@ export default function Gallery({ gallery }: Props) {
 
     return (
         <>
-            <Head title="Gallery">
-                <meta
-                    name="description"
-                    content={`Photos of dishes and events from ${site.name}.`}
-                />
-            </Head>
+            <Seo />
 
             <section className="border-b border-[#F0DCC2] bg-white/70">
                 <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">

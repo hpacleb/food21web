@@ -19,6 +19,14 @@ export type GalleryImage = {
     tag: string;
 };
 
+export type SeoProps = {
+    title: string;
+    description: string;
+    canonical: string;
+    image: string | null;
+    json_ld: Record<string, unknown> | null;
+};
+
 export type SiteConfig = {
     name: string;
     short_name: string;

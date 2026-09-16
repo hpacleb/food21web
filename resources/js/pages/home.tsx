@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     CalendarClock,
     Check,
@@ -10,6 +10,7 @@ import {
     Truck,
     UtensilsCrossed,
 } from 'lucide-react';
+import Seo from '@/components/seo';
 import { about, contact, gallery, menu, order } from '@/routes';
 import type { MenuItem } from '@/types';
 
@@ -67,9 +68,7 @@ export default function Home({ featuredDishes }: Props) {
 
     return (
         <>
-            <Head title={site.tagline}>
-                <meta name="description" content={site.description} />
-            </Head>
+            <Seo />
 
             <section className="relative overflow-hidden">
                 <div

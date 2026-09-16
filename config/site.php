@@ -3,6 +3,7 @@
 return [
     'name' => 'Food21 Catering Delivery',
     'short_name' => 'Food 21',
+    'url' => 'https://food21services.com',
     'tagline' => 'Filipino party favorites, cooked fresh and delivered hot.',
     'description' => 'Food 21 Catering Delivery cooks Filipino party favorites from our kitchen in Parañaque and brings them straight to your event. Delivery and full catering for birthdays, fiestas, weddings, baptisms, and office celebrations.',
 
@@ -24,6 +25,21 @@ return [
     ],
     'email' => 'food21catering@gmail.com',
     'address' => '21 Maryland Street, Topland Subdivision, Parañaque, Philippines 1700',
+    'address_parts' => [
+        'street' => '21 Maryland Street, Topland Subdivision',
+        'locality' => 'Parañaque',
+        'region' => 'Metro Manila',
+        'postal_code' => '1700',
+        'country' => 'PH',
+    ],
+    'geo' => [
+        'latitude' => 14.4793,
+        'longitude' => 121.0198,
+    ],
+    'price_range' => '₱₱',
+    'cuisine' => 'Filipino',
+    'area_served' => 'Parañaque City, Metro Manila',
+    'opening_hours' => ['Mo-Su 08:00-20:00'],
     'service_area' => 'We deliver across Parañaque City and nearby Metro Manila communities.',
 
     'facebook' => 'https://www.facebook.com/Food21CateringDelivery/',

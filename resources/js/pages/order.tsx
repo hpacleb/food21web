@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     BadgeCheck,
     ChevronRight,
@@ -8,6 +8,7 @@ import {
     Phone,
     PhoneCall,
 } from 'lucide-react';
+import Seo from '@/components/seo';
 import { contact, menu } from '@/routes';
 
 const steps = [
@@ -33,12 +34,7 @@ export default function Order() {
 
     return (
         <>
-            <Head title="Delivery orders">
-                <meta
-                    name="description"
-                    content={`Order food for delivery from ${site.name}. Call ${site.delivery.landlines.join(' or ')} daily, 8:00 AM to 8:00 PM.`}
-                />
-            </Head>
+            <Seo />
 
             <section className="border-b border-[#F0DCC2] bg-white/70">
                 <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8">

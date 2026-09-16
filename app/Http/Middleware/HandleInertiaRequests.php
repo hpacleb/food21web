@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Seo;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -39,6 +40,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'site' => config('site'),
+            'seo' => fn () => Seo::forRequest($request),
             'auth' => [
                 'user' => $request->user(),
             ],

@@ -37,8 +37,35 @@
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        @php
+            $seo = $page['props']['seo'] ?? null;
+            $seoTitle = ($seo['title'] ?? config('app.name')).' | '.config('site.short_name');
+            $seoDescription = $seo['description'] ?? config('site.description');
+            $seoCanonical = $seo['canonical'] ?? config('site.url');
+            $seoImage = $seo['image'] ?? null;
+        @endphp
         <x-inertia::head>
-            <title>{{ config('app.name', 'Laravel') }}</title>
+            <title>{{ $seoTitle }}</title>
+            <meta data-inertia="description" name="description" content="{{ $seoDescription }}">
+            <link data-inertia="canonical" rel="canonical" href="{{ $seoCanonical }}">
+            <meta data-inertia="og:type" property="og:type" content="website">
+            <meta data-inertia="og:locale" property="og:locale" content="en_PH">
+            <meta data-inertia="og:site_name" property="og:site_name" content="{{ config('site.name') }}">
+            <meta data-inertia="og:title" property="og:title" content="{{ $seoTitle }}">
+            <meta data-inertia="og:description" property="og:description" content="{{ $seoDescription }}">
+            <meta data-inertia="og:url" property="og:url" content="{{ $seoCanonical }}">
+            @if ($seoImage)
+                <meta data-inertia="og:image" property="og:image" content="{{ $seoImage }}">
+            @endif
+            <meta data-inertia="twitter:card" name="twitter:card" content="summary_large_image">
+            <meta data-inertia="twitter:title" name="twitter:title" content="{{ $seoTitle }}">
+            <meta data-inertia="twitter:description" name="twitter:description" content="{{ $seoDescription }}">
+            @if ($seoImage)
+                <meta data-inertia="twitter:image" name="twitter:image" content="{{ $seoImage }}">
+            @endif
+            @if ($seo['json_ld'] ?? null)
+                <script data-inertia="json-ld" type="application/ld+json">{!! json_encode($seo['json_ld'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+            @endif
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">

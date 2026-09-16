@@ -1,5 +1,6 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { ChevronRight, MapPin, UtensilsCrossed } from 'lucide-react';
+import Seo from '@/components/seo';
 import { contact, order } from '@/routes';
 import type { MenuConfig } from '@/types';
 
@@ -12,12 +13,7 @@ export default function Menu({ menu }: Props) {
 
     return (
         <>
-            <Head title="Menu">
-                <meta
-                    name="description"
-                    content={`Catering menu from ${site.name}. ${site.tagline}`}
-                />
-            </Head>
+            <Seo />
 
             <section className="border-b border-[#F0DCC2] bg-white/70">
                 <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
