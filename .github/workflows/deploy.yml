@@ -38,6 +38,14 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Prepare application environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Generate wayfinder routes
+        run: php artisan wayfinder:generate
+
       - name: Install Node dependencies
         run: npm ci
 
