@@ -39,14 +39,14 @@ return [
     'price_range' => '₱₱',
     'cuisine' => 'Filipino',
     'area_served' => 'Parañaque City, Metro Manila',
-    'opening_hours' => ['Mo-Su 08:00-20:00'],
+    'opening_hours' => ['Mo-Su 08:30-20:30'],
     'service_area' => 'We deliver across Parañaque City and nearby Metro Manila communities.',
 
     'facebook' => 'https://www.facebook.com/Food21CateringDelivery/',
     'instagram' => null,
 
     'hours' => [
-        ['days' => 'Monday to Sunday', 'time' => '8:00 AM - 8:00 PM'],
+        ['days' => 'Monday to Sunday', 'time' => '8:30 AM - 8:30 PM'],
     ],
 
     'stats' => [

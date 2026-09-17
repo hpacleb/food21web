@@ -413,7 +413,7 @@ export default function Home({ featuredDishes }: Props) {
                         >
                             {site.delivery.landlines.join(' or ')}
                         </Link>{' '}
-                        - open Monday to Sunday, 8:00 AM to 8:00 PM.
+                        - open Monday to Sunday, 8:30 AM to 8:30 PM.
                     </p>
                 </div>
             </section>

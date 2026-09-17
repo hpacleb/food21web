@@ -15,7 +15,7 @@ const steps = [
     {
         title: 'Call either landline',
         description:
-            'Both lines are open Monday to Sunday, 8:00 AM to 8:00 PM.',
+            'Both lines are open Monday to Sunday, 8:30 AM to 8:30 PM.',
     },
     {
         title: 'Tell us your order',
@@ -55,7 +55,7 @@ export default function Order() {
                                 className="size-4 text-[#C13329]"
                                 aria-hidden
                             />
-                            Monday to Sunday, 8:00 AM - 8:00 PM
+                            Monday to Sunday, 8:30 AM - 8:30 PM
                         </span>
                         <span className="flex items-center gap-2">
                             <MapPin

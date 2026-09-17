@@ -82,7 +82,7 @@ test('the home page exposes local business structured data', function () {
             ->where('seo.json_ld.address.addressLocality', 'Parañaque')
             ->where('seo.json_ld.address.addressCountry', 'PH')
             ->where('seo.json_ld.sameAs.0', 'https://www.facebook.com/Food21CateringDelivery/')
-            ->where('seo.json_ld.openingHours.0', 'Mo-Su 08:00-20:00'));
+            ->where('seo.json_ld.openingHours.0', 'Mo-Su 08:30-20:30'));
 });
 
 test('pages other than home do not expose structured data', function (string $routeName) {
