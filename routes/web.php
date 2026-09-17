@@ -5,6 +5,7 @@ use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PriceController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\SubmeterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
@@ -15,6 +16,10 @@ Route::get('/order', [PageController::class, 'order'])->name('order');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact', [InquiryController::class, 'store'])->name('inquiries.store');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+
+Route::get('submeter', [SubmeterController::class, 'index'])->name('submeter');
+Route::post('submeter/upload', [SubmeterController::class, 'upload'])->name('submeter.upload');
+Route::post('submeter/download', [SubmeterController::class, 'download'])->name('submeter.download');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
