@@ -19,7 +19,7 @@ class SubmeterController extends Controller
     public function index(): Response
     {
         return Inertia::render('submeter', [
-            'file' => $this->currentFileInfo(),
+            'files' => $this->files(),
         ]);
     }
 
@@ -35,10 +35,7 @@ class SubmeterController extends Controller
         /** @var UploadedFile $upload */
         $upload = $request->file('file');
 
-        $disk = $this->disk();
-        $disk->delete($disk->files($this->directory()));
-
-        $disk->putFileAs(
+        $this->disk()->putFileAs(
             $this->directory(),
             $upload,
             basename($upload->getClientOriginalName()),
@@ -46,7 +43,7 @@ class SubmeterController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => __('File uploaded. The previous file has been replaced.'),
+            'message' => __('File uploaded.'),
         ]);
 
         return back();
@@ -56,19 +53,42 @@ class SubmeterController extends Controller
     {
         $request->validate([
             'password' => ['required', 'string'],
+            'name' => ['required', 'string'],
         ]);
 
         if (! $this->passwordMatches($request->string('password')->toString())) {
-            return response()->json([
-                'message' => __('The password is incorrect.'),
-            ], 403);
+            return $this->invalidPassword();
         }
 
-        $path = $this->currentFilePath();
+        $path = $this->existingFilePath($request->string('name')->toString());
 
-        abort_if($path === null, 404, __('No file has been uploaded yet.'));
+        if ($path === null) {
+            return $this->fileNotFound();
+        }
 
         return $this->disk()->download($path, basename($path));
+    }
+
+    public function destroy(Request $request): JsonResponse
+    {
+        $request->validate([
+            'password' => ['required', 'string'],
+            'name' => ['required', 'string'],
+        ]);
+
+        if (! $this->passwordMatches($request->string('password')->toString())) {
+            return $this->invalidPassword();
+        }
+
+        $path = $this->existingFilePath($request->string('name')->toString());
+
+        if ($path === null) {
+            return $this->fileNotFound();
+        }
+
+        $this->disk()->delete($path);
+
+        return response()->json(['message' => __('File deleted.')]);
     }
 
     private function ensurePasswordIsValid(string $password): void
@@ -89,35 +109,48 @@ class SubmeterController extends Controller
         return $expected !== '' && hash_equals($expected, $password);
     }
 
-    /**
-     * @return array{name: string, size: int, uploaded_at: string}|null
-     */
-    private function currentFileInfo(): ?array
+    private function invalidPassword(): JsonResponse
     {
-        $path = $this->currentFiles()->first();
-
-        if ($path === null) {
-            return null;
-        }
-
-        $disk = $this->disk();
-
-        return [
-            'name' => basename($path),
-            'size' => $disk->size($path),
-            'uploaded_at' => now()->setTimestamp($disk->lastModified($path))->toIso8601String(),
-        ];
+        return response()->json([
+            'message' => __('The password is incorrect.'),
+        ], 403);
     }
 
-    private function currentFilePath(): ?string
+    private function fileNotFound(): JsonResponse
     {
-        return $this->currentFiles()->first();
+        return response()->json([
+            'message' => __('File not found.'),
+        ], 404);
+    }
+
+    private function existingFilePath(string $name): ?string
+    {
+        $path = $this->directory().'/'.basename($name);
+
+        return $this->paths()->contains($path) ? $path : null;
+    }
+
+    /**
+     * @return array<int, array{name: string, size: int, uploaded_at: string}>
+     */
+    private function files(): array
+    {
+        $disk = $this->disk();
+
+        return $this->paths()
+            ->map(fn (string $path): array => [
+                'name' => basename($path),
+                'size' => $disk->size($path),
+                'uploaded_at' => now()->setTimestamp($disk->lastModified($path))->toIso8601String(),
+            ])
+            ->values()
+            ->all();
     }
 
     /**
      * @return Collection<int, string>
      */
-    private function currentFiles(): Collection
+    private function paths(): Collection
     {
         $disk = $this->disk();
 

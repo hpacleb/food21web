@@ -11,6 +11,7 @@ export type UseAppearanceReturn = {
 
 const listeners = new Set<() => void>();
 let currentAppearance: Appearance = 'system';
+let forceLight = false;
 
 const prefersDark = (): boolean => {
     if (typeof window === 'undefined') {
@@ -46,11 +47,21 @@ const applyTheme = (appearance: Appearance): void => {
         return;
     }
 
-    const isDark = isDarkMode(appearance);
+    const isDark = !forceLight && isDarkMode(appearance);
 
     document.documentElement.classList.toggle('dark', isDark);
     document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 };
+
+export function forceLightTheme(): () => void {
+    forceLight = true;
+    applyTheme(currentAppearance);
+
+    return () => {
+        forceLight = false;
+        applyTheme(currentAppearance);
+    };
+}
 
 const subscribe = (callback: () => void) => {
     listeners.add(callback);

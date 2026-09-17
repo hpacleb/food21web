@@ -20,6 +20,7 @@ Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('submeter', [SubmeterController::class, 'index'])->name('submeter');
 Route::post('submeter/upload', [SubmeterController::class, 'upload'])->name('submeter.upload');
 Route::post('submeter/download', [SubmeterController::class, 'download'])->name('submeter.download');
+Route::delete('submeter/file', [SubmeterController::class, 'destroy'])->name('submeter.destroy');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');

@@ -1,5 +1,5 @@
-import { Head, useForm } from '@inertiajs/react';
-import { Download, FileText, Upload } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { Download, FileText, Trash2, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
@@ -7,7 +7,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { download, upload } from '@/routes/submeter';
+import { destroy, download, upload } from '@/routes/submeter';
 
 type SharedFile = {
     name: string;
@@ -16,7 +16,7 @@ type SharedFile = {
 };
 
 type Props = {
-    file: SharedFile | null;
+    files: SharedFile[];
 };
 
 function formatBytes(bytes: number): string {
@@ -37,14 +37,41 @@ function csrfHeaders(): Record<string, string> {
     return match ? { 'X-XSRF-TOKEN': decodeURIComponent(match[1]) } : {};
 }
 
-export default function Submeter({ file }: Props) {
+async function sendAction(
+    url: string,
+    method: 'POST' | 'DELETE',
+    payload: Record<string, string>,
+): Promise<Response> {
+    return fetch(url, {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            ...csrfHeaders(),
+        },
+        body: JSON.stringify(payload),
+    });
+}
+
+export default function Submeter({ files }: Props) {
     const fileInput = useRef<HTMLInputElement>(null);
-    const [downloading, setDownloading] = useState(false);
+    const [busy, setBusy] = useState<string | null>(null);
 
     const form = useForm<{ password: string; file: File | null }>({
         password: '',
         file: null,
     });
+
+    const requirePassword = (): string | null => {
+        if (!form.data.password) {
+            toast.error('Enter the password first.');
+
+            return null;
+        }
+
+        return form.data.password;
+    };
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -62,25 +89,19 @@ export default function Submeter({ file }: Props) {
         });
     };
 
-    const handleDownload = async () => {
-        if (!form.data.password) {
-            toast.error('Enter the password first.');
+    const handleDownload = async (file: SharedFile) => {
+        const password = requirePassword();
 
+        if (password === null) {
             return;
         }
 
-        setDownloading(true);
+        setBusy(`download:${file.name}`);
 
         try {
-            const response = await fetch(download().url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    ...csrfHeaders(),
-                },
-                body: JSON.stringify({ password: form.data.password }),
+            const response = await sendAction(download().url, 'POST', {
+                password,
+                name: file.name,
             });
 
             if (!response.ok) {
@@ -98,7 +119,7 @@ export default function Submeter({ file }: Props) {
             const link = document.createElement('a');
 
             link.href = objectUrl;
-            link.download = file?.name ?? 'download';
+            link.download = file.name;
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -106,7 +127,45 @@ export default function Submeter({ file }: Props) {
         } catch {
             toast.error('Unable to download the file.');
         } finally {
-            setDownloading(false);
+            setBusy(null);
+        }
+    };
+
+    const handleDelete = async (file: SharedFile) => {
+        const password = requirePassword();
+
+        if (password === null) {
+            return;
+        }
+
+        if (!window.confirm(`Delete "${file.name}"? This cannot be undone.`)) {
+            return;
+        }
+
+        setBusy(`delete:${file.name}`);
+
+        try {
+            const response = await sendAction(destroy().url, 'DELETE', {
+                password,
+                name: file.name,
+            });
+
+            const data = (await response.json().catch(() => null)) as {
+                message?: string;
+            } | null;
+
+            if (!response.ok) {
+                toast.error(data?.message ?? 'Unable to delete the file.');
+
+                return;
+            }
+
+            toast.success(data?.message ?? 'File deleted.');
+            router.reload();
+        } catch {
+            toast.error('Unable to delete the file.');
+        } finally {
+            setBusy(null);
         }
     };
 
@@ -120,16 +179,16 @@ export default function Submeter({ file }: Props) {
                         Submeter
                     </p>
                     <h1 className="mt-3 max-w-3xl text-4xl font-extrabold tracking-tight text-[#2B1200] sm:text-5xl">
-                        Upload and download the shared file
+                        Upload and manage the shared files
                     </h1>
                     <p className="mt-5 max-w-2xl text-base leading-relaxed text-[#6B4A36] sm:text-lg">
-                        Enter the password to upload a new file or download the
-                        current one. Only the most recent file is kept.
+                        Enter the password to upload a new file, or to download
+                        or delete an existing one.
                     </p>
                 </div>
             </section>
 
-            <section className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+            <section className="mx-auto w-full max-w-6xl space-y-8 px-4 py-16 sm:px-6 lg:px-8">
                 <form
                     onSubmit={submit}
                     className="mx-auto max-w-2xl space-y-6 rounded-3xl border border-[#F0DCC2] bg-white p-7 shadow-sm"
@@ -166,54 +225,111 @@ export default function Submeter({ file }: Props) {
                         <InputError message={form.errors.file} />
                     </div>
 
-                    <div className="flex items-start gap-3 rounded-2xl bg-[#FFF8EE] p-4">
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#C13329] text-white">
-                            <FileText className="size-4" aria-hidden />
-                        </span>
-                        <div className="min-w-0">
-                            <p className="text-xs font-bold tracking-[0.14em] text-[#8A6A55] uppercase">
-                                Current file
-                            </p>
-                            {file ? (
-                                <>
-                                    <p className="truncate text-sm font-bold text-[#2B1200]">
-                                        {file.name}
-                                    </p>
-                                    <p className="text-xs text-[#8A6A55]">
-                                        {formatBytes(file.size)} - uploaded{' '}
-                                        {new Date(
-                                            file.uploaded_at,
-                                        ).toLocaleString()}
-                                    </p>
-                                </>
-                            ) : (
-                                <p className="text-sm text-[#6B4A36]">
-                                    No file has been uploaded yet.
-                                </p>
-                            )}
-                        </div>
+                    <Button
+                        type="submit"
+                        disabled={form.processing}
+                        className="bg-[#C13329] text-white hover:bg-[#A62A21]"
+                    >
+                        <Upload aria-hidden />
+                        {form.processing ? 'Uploading...' : 'Upload'}
+                    </Button>
+                </form>
+
+                <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl border border-[#F0DCC2] bg-white shadow-sm">
+                    <div className="border-b border-[#F5E5D2] bg-[#FFF8EE] px-6 py-4">
+                        <h2 className="text-lg font-extrabold text-[#2B1200]">
+                            Uploaded files
+                        </h2>
+                        <p className="text-xs text-[#8A6A55]">
+                            {files.length === 0
+                                ? 'No files have been uploaded yet.'
+                                : `${files.length} file${files.length === 1 ? '' : 's'}`}
+                        </p>
                     </div>
 
-                    <div className="flex flex-wrap gap-3">
-                        <Button
-                            type="submit"
-                            disabled={form.processing}
-                            className="bg-[#C13329] text-white hover:bg-[#A62A21]"
-                        >
-                            <Upload aria-hidden />
-                            {form.processing ? 'Uploading...' : 'Upload'}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleDownload}
-                            disabled={downloading || file === null}
-                        >
-                            <Download aria-hidden />
-                            {downloading ? 'Downloading...' : 'Download'}
-                        </Button>
-                    </div>
-                </form>
+                    {files.length > 0 && (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm">
+                                <thead>
+                                    <tr className="border-b border-[#F5E5D2] text-xs font-bold tracking-[0.14em] text-[#8A6A55] uppercase">
+                                        <th className="px-6 py-3">File</th>
+                                        <th className="px-6 py-3">Size</th>
+                                        <th className="px-6 py-3">Uploaded</th>
+                                        <th className="px-6 py-3 text-right">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {files.map((file) => (
+                                        <tr
+                                            key={file.name}
+                                            className="border-b border-[#F5E5D2] last:border-b-0"
+                                        >
+                                            <td className="max-w-xs px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#C13329] text-white">
+                                                        <FileText
+                                                            className="size-4"
+                                                            aria-hidden
+                                                        />
+                                                    </span>
+                                                    <span className="truncate font-bold text-[#2B1200]">
+                                                        {file.name}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-[#5C3A28]">
+                                                {formatBytes(file.size)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-[#5C3A28]">
+                                                {new Date(
+                                                    file.uploaded_at,
+                                                ).toLocaleString()}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleDownload(file)
+                                                        }
+                                                        disabled={busy !== null}
+                                                        className="border-[#E8C9A8] text-[#2B1200] hover:bg-[#FFF3E4] hover:text-[#2B1200]"
+                                                    >
+                                                        <Download aria-hidden />
+                                                        {busy ===
+                                                        `download:${file.name}`
+                                                            ? 'Downloading...'
+                                                            : 'Download'}
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleDelete(file)
+                                                        }
+                                                        disabled={busy !== null}
+                                                        className="border-[#C13329]/30 text-[#C13329] hover:bg-[#C13329]/10 hover:text-[#A62A21]"
+                                                    >
+                                                        <Trash2 aria-hidden />
+                                                        {busy ===
+                                                        `delete:${file.name}`
+                                                            ? 'Deleting...'
+                                                            : 'Delete'}
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
             </section>
         </>
     );
