@@ -33,9 +33,9 @@ const values = [
     },
     {
         icon: ShieldCheck,
-        title: 'Clean and careful',
+        title: 'Thoughtful from start to finish',
         description:
-            'Ingredients are sourced from trusted suppliers and packed in insulated, food-safe containers.',
+            'We carefully prepare and pack each order so your food arrives fresh and enjoyable.',
     },
 ];
 
