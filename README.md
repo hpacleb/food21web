@@ -1,5 +1,7 @@
 # Food 21 Services
 
+[![Tests](https://github.com/hpacleb/food21web/actions/workflows/tests.yml/badge.svg)](https://github.com/hpacleb/food21web/actions/workflows/tests.yml) [![Deploy](https://github.com/hpacleb/food21web/actions/workflows/deploy.yml/badge.svg)](https://github.com/hpacleb/food21web/actions/workflows/deploy.yml)
+
 Production website for Food 21 Services, a catering and delivery business in Parañaque City.
 
 Live: [food21services.com](https://food21services.com)
