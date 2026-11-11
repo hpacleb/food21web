@@ -1,14 +1,59 @@
-import { Link, usePage } from '@inertiajs/react';
-import { Clock, Facebook, Mail, MapPin, MessageCircle } from 'lucide-react';
+import { Link, useForm, usePage } from '@inertiajs/react';
+import {
+    Clock,
+    Facebook,
+    Mail,
+    MapPin,
+    MessageCircle,
+    Send,
+} from 'lucide-react';
+import type { FormEvent } from 'react';
 import Seo from '@/components/seo';
+import InputError from '@/components/input-error';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { order } from '@/routes';
 
-export default function Contact() {
+type Props = {
+    eventTypes: string[];
+};
+
+type QuoteForm = {
+    name: string;
+    email: string;
+    phone: string;
+    event_type: string;
+    event_date: string;
+    guests: string;
+    message: string;
+};
+
+export default function Contact({ eventTypes }: Props) {
     const { site } = usePage().props;
     const viberNumber = site.quote.viber.replace(/[^+\d]/g, '');
     const viberLink = `viber://chat?number=${encodeURIComponent(
         `+63${viberNumber.replace(/^0/, '')}`,
     )}`;
+
+    const form = useForm<QuoteForm>({
+        name: '',
+        email: '',
+        phone: '',
+        event_type: '',
+        event_date: '',
+        guests: '',
+        message: '',
+    });
+
+    const submit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        form.post('/contact', {
+            preserveScroll: true,
+            onSuccess: () => form.reset(),
+        });
+    };
 
     return (
         <>
@@ -23,14 +68,174 @@ export default function Contact() {
                         Talk to us about your event
                     </h1>
                     <p className="mt-5 max-w-2xl text-base leading-relaxed text-[#6B4A36] sm:text-lg">
-                        Message us on Viber, send an email, or reach out on
-                        Facebook. We usually reply within the same day.
+                        Send the quote form below, message us on Viber, or reach
+                        out on Facebook. We usually reply within the same day.
                     </p>
                 </div>
             </section>
 
             <section className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-3xl space-y-6">
+                    <div className="rounded-3xl border border-[#F0DCC2] bg-white p-7 shadow-sm">
+                        <h2 className="text-lg font-extrabold text-[#2B1200]">
+                            Request a quote
+                        </h2>
+                        <p className="mt-2 text-sm leading-relaxed text-[#6B4A36]">
+                            Tell us the date, headcount, and budget. We will
+                            reply with a menu and a quote.
+                        </p>
+
+                        <form onSubmit={submit} className="mt-6 space-y-5">
+                            <div className="grid gap-5 sm:grid-cols-2">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="name">Name</Label>
+                                    <Input
+                                        id="name"
+                                        value={form.data.name}
+                                        onChange={(e) =>
+                                            form.setData('name', e.target.value)
+                                        }
+                                        required
+                                    />
+                                    <InputError message={form.errors.name} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={form.data.email}
+                                        onChange={(e) =>
+                                            form.setData(
+                                                'email',
+                                                e.target.value,
+                                            )
+                                        }
+                                        required
+                                    />
+                                    <InputError message={form.errors.email} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="phone">
+                                        Phone (optional)
+                                    </Label>
+                                    <Input
+                                        id="phone"
+                                        type="tel"
+                                        value={form.data.phone}
+                                        onChange={(e) =>
+                                            form.setData(
+                                                'phone',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                    <InputError message={form.errors.phone} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="event_date">
+                                        Event date (optional)
+                                    </Label>
+                                    <Input
+                                        id="event_date"
+                                        type="date"
+                                        value={form.data.event_date}
+                                        onChange={(e) =>
+                                            form.setData(
+                                                'event_date',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                    <InputError
+                                        message={form.errors.event_date}
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="event_type">
+                                        Event type
+                                    </Label>
+                                    <select
+                                        id="event_type"
+                                        value={form.data.event_type}
+                                        onChange={(e) =>
+                                            form.setData(
+                                                'event_type',
+                                                e.target.value,
+                                            )
+                                        }
+                                        required
+                                        className="h-9 w-full rounded-md border border-[#E7C9A6] bg-white px-3 text-sm shadow-xs outline-none focus:border-[#C13329] focus:ring-[3px] focus:ring-[#C13329]/20"
+                                    >
+                                        <option value="" disabled>
+                                            Select an event type
+                                        </option>
+                                        {eventTypes.map((eventType) => (
+                                            <option
+                                                key={eventType}
+                                                value={eventType}
+                                            >
+                                                {eventType}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <InputError
+                                        message={form.errors.event_type}
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="guests">
+                                        Guest count (optional)
+                                    </Label>
+                                    <Input
+                                        id="guests"
+                                        type="number"
+                                        min={1}
+                                        value={form.data.guests}
+                                        onChange={(e) =>
+                                            form.setData(
+                                                'guests',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                    <InputError message={form.errors.guests} />
+                                </div>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="message">
+                                    Message (optional)
+                                </Label>
+                                <Textarea
+                                    id="message"
+                                    rows={4}
+                                    value={form.data.message}
+                                    onChange={(e) =>
+                                        form.setData('message', e.target.value)
+                                    }
+                                />
+                                <InputError message={form.errors.message} />
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-4">
+                                <button
+                                    type="submit"
+                                    disabled={form.processing}
+                                    className="inline-flex h-11 items-center gap-2 rounded-full bg-[#C13329] px-6 text-sm font-bold text-white transition-colors hover:bg-[#A62A21] disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    <Send className="size-4" aria-hidden />
+                                    Send request
+                                </button>
+                                {form.recentlySuccessful ? (
+                                    <p className="text-sm font-semibold text-green-700">
+                                        Thanks — your request is in.
+                                    </p>
+                                ) : null}
+                            </div>
+                        </form>
+                    </div>
+
                     <div className="rounded-3xl bg-[#4A0F0B] p-7 text-[#F8E8D8]">
                         <h2 className="text-lg font-extrabold text-white">
                             Talk to us directly
